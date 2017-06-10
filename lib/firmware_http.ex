@@ -34,10 +34,32 @@ defmodule Nerves.Firmware.HTTP do
   @doc "Application start callback"
   @spec start(atom, term) :: {:ok, pid} | {:error, String.t}
   def start(_type, _args) do
+    use_ssl = Application.get_env(:nerves_firmware_http, :use_ssl, true)
+    cacertfile = Application.get_env(:nerves_firmware_http, :cacertfile, "ca-cert.crt")
+    certfile = Application.get_env(:nerves_firmware_http, :certfile, "cert.crt")
+    keyfile = Application.get_env(:nerves_firmware_http, :keyfile, "cert.key")
     port = Application.get_env(:nerves_firmware_http, :port, 8988)
     path = Application.get_env(:nerves_firmware_http, :path, "/firmware")
     timeout = Application.get_env(:nerves_firmware_http, :timeout, 120_000)
     dispatch = :cowboy_router.compile [{:_,[{path, Nerves.Firmware.HTTP.Transport, []}]}]
-    :cowboy.start_http(__MODULE__, 10, [port: port], [env: [dispatch: dispatch], timeout: timeout])
+
+    cond do
+      use_ssl == true ->
+        priv_dir = :code.priv_dir(:nerves)
+
+        {:ok, _} = :cowboy.start_tls(:https, [
+            port: port,
+            cacertfile: priv_dir ++ "/ssl/" ++ cacertfile,
+            certfile: priv_dir ++ "/ssl/" ++ certfile,
+            keyfile: priv_dir ++ "/ssl/" ++ keyfile],
+            [env: [dispatch: dispatch]
+        ])
+      true ->
+          :cowboy.start_http(__MODULE__, 10, [port: port], [env: [dispatch: dispatch], timeout: timeout])
+    end
+
+
+
+
   end
 end
