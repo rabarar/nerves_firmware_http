@@ -51,7 +51,7 @@ defmodule Mix.Tasks.Firmware.Push do
 
     reboot = opts[:reboot] || true
     start_httpc()
-    url = "http://#{ip}:8988/firmware" |> String.to_char_list
+    url = "https://#{ip}:8988/firmware" |> String.to_char_list
     http_opts = [relaxed: true, autoredirect: true] #++ Nerves.Utils.Proxy.config(url)
     opts = [body_format: :binary]
 
@@ -122,7 +122,7 @@ defmodule Mix.Tasks.Firmware.Push do
         (Mix.Project.config[:images_path] ||
         Path.join([Mix.Project.build_path, "nerves", "images"]) ||
         "_images/#{target}")
-      image = Path.join([images_path, "#{app}.fw"]) 
+      image = Path.join([images_path, "#{app}.fw"])
       |> Path.expand
     end)
   end
