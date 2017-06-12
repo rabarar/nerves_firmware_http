@@ -17,11 +17,11 @@ defmodule Mix.Tasks.Firmware.Push do
 
   For example, to push firmware to a device at an IP by specifying a fw file
 
-    mix firmware.push 192.168.1.120 --firmware _images/rpi3/my_app.fw
+    mix firmware.push 192.168.1.120 <port> --firmware _images/rpi3/my_app.fw
 
   Or by discovering it with the target
 
-    mix firmware.push 192.168.1.120 --target rpi3
+    mix firmware.push 192.168.1.120 <port> --target rpi3
 
   This task needs to run in the context of your host so it is not advised to
   pass `MIX_TARGET` or `NERVES_TARGET` in your env
@@ -31,7 +31,7 @@ defmodule Mix.Tasks.Firmware.Push do
   @chunk 10_000
   @progress_steps 25
 
-  def run([ip | argv]) do
+  def run([ip, port | argv]) do
     {opts, _, _} = OptionParser.parse(argv, switches: @switches)
     body =
       firmware(opts)
@@ -51,7 +51,7 @@ defmodule Mix.Tasks.Firmware.Push do
 
     reboot = opts[:reboot] || true
     start_httpc()
-    url = "https://#{ip}:8988/firmware" |> String.to_char_list
+    url = "https://#{ip}:{port}/firmware" |> String.to_char_list
     http_opts = [relaxed: true, autoredirect: true] #++ Nerves.Utils.Proxy.config(url)
     opts = [body_format: :binary]
 
