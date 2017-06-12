@@ -8,4 +8,6 @@ config :nerves_firmware,
   keyfile: "cert.key",
   port: 8988,
   path: "/firmware",
+  json_provider: Poison,
+  json_opts: [space: 1, indent: 2],
   timeout: 120_000
